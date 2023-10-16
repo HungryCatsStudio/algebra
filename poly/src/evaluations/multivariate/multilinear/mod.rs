@@ -41,7 +41,7 @@ pub trait MultilinearExtension<F: Field>:
     + for<'a> AddAssign<(F, &'a Self)>
     + for<'a> SubAssign<&'a Self>
     + Index<usize>
-    + Polynomial<F> where Self::Point: IntoIterator<Item = F>
+    + Polynomial<F>// where Self::Point: IntoIterator<Item = F>
 {
     /// Returns the number of variables in `self`
     fn num_vars(&self) -> usize;
