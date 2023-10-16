@@ -175,6 +175,7 @@ macro_rules! __test_group {
         #[test]
         fn test_var_base_msm() {
             $crate::msm::test_var_base_msm::<$group>();
+            $crate::msm::test_var_base_msm_small::<$group>();
         }
 
         #[test]

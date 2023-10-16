@@ -317,7 +317,7 @@ impl<P: Pairing> crate::ScalarMul for PairingOutput<P> {
     }
 }
 
-impl<P: Pairing> VariableBaseMSM for PairingOutput<P> {}
+impl<P: Pairing, const MAX_BITS: usize> VariableBaseMSM<MAX_BITS> for PairingOutput<P> {}
 
 /// Represents the output of the Miller loop of the pairing.
 #[derive(Derivative)]

@@ -9,7 +9,9 @@ pub use stream_pippenger::*;
 
 use super::ScalarMul;
 
-pub trait VariableBaseMSM: ScalarMul {
+pub(crate) const FULL: usize = u16::MAX as usize;
+
+pub trait VariableBaseMSM<const NUM_BITS: usize = FULL>: ScalarMul {
     /// Computes an inner product between the [`PrimeField`] elements in `scalars`
     /// and the corresponding group elements in `bases`.
     ///
@@ -86,7 +88,7 @@ pub trait VariableBaseMSM: ScalarMul {
 }
 
 // Compute msm using windowed non-adjacent form
-fn msm_bigint_wnaf<V: VariableBaseMSM>(
+fn msm_bigint_wnaf<V: VariableBaseMSM<NUM_BITS>, const NUM_BITS: usize>(
     bases: &[V::MulBase],
     bigints: &[<V::ScalarField as PrimeField>::BigInt],
 ) -> V {
@@ -94,13 +96,19 @@ fn msm_bigint_wnaf<V: VariableBaseMSM>(
     let scalars = &bigints[..size];
     let bases = &bases[..size];
 
+    let field_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
+    let num_bits = if NUM_BITS > field_bits {
+        field_bits
+    } else {
+        NUM_BITS
+    };
+
     let c = if size < 32 {
         3
     } else {
         super::ln_without_floats(size) + 2
     };
 
-    let num_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
     let digits_count = (num_bits + c - 1) / c;
     let scalar_digits = scalars
         .iter()
@@ -149,7 +157,7 @@ fn msm_bigint_wnaf<V: VariableBaseMSM>(
 }
 
 /// Optimized implementation of multi-scalar multiplication.
-fn msm_bigint<V: VariableBaseMSM>(
+fn msm_bigint<V: VariableBaseMSM<NUM_BITS>, const NUM_BITS: usize>(
     bases: &[V::MulBase],
     bigints: &[<V::ScalarField as PrimeField>::BigInt],
 ) -> V {
@@ -158,13 +166,19 @@ fn msm_bigint<V: VariableBaseMSM>(
     let bases = &bases[..size];
     let scalars_and_bases_iter = scalars.iter().zip(bases).filter(|(s, _)| !s.is_zero());
 
+    let field_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
+    let num_bits = if NUM_BITS > field_bits {
+        field_bits
+    } else {
+        NUM_BITS
+    };
+
     let c = if size < 32 {
         3
     } else {
         super::ln_without_floats(size) + 2
     };
 
-    let num_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
     let one = V::ScalarField::one().into_bigint();
 
     let zero = V::zero();

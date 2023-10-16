@@ -499,7 +499,7 @@ impl<P: TECurveConfig> ScalarMul for Projective<P> {
     }
 }
 
-impl<P: TECurveConfig> VariableBaseMSM for Projective<P> {
+impl<P: TECurveConfig, const MAX_BITS: usize> VariableBaseMSM<MAX_BITS> for Projective<P> {
     fn msm(bases: &[Self::MulBase], bigints: &[Self::ScalarField]) -> Result<Self, usize> {
         P::msm(bases, bigints)
     }

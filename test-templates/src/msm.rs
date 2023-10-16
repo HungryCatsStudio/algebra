@@ -2,6 +2,7 @@ use ark_ec::{
     scalar_mul::variable_base::{ChunkedPippenger, HashMapPippenger, VariableBaseMSM},
     ScalarMul,
 };
+use ark_ff::BigInteger;
 use ark_ff::{PrimeField, UniformRand};
 use ark_std::vec::Vec;
 
@@ -27,6 +28,42 @@ pub fn test_var_base_msm<G: VariableBaseMSM>() {
 
     let naive = naive_var_base_msm::<G>(g.as_slice(), v.as_slice());
     let fast = G::msm(g.as_slice(), v.as_slice()).unwrap();
+
+    assert_eq!(naive, fast);
+}
+
+pub fn test_var_base_msm_small<G: VariableBaseMSM<10>>() {
+    const SAMPLES: usize = 1 << 10;
+
+    let mut rng = ark_std::test_rng();
+
+    let v = (0..SAMPLES)
+        .map(|_| G::ScalarField::rand(&mut rng))
+        .collect::<Vec<_>>();
+
+    const MAX_BITS: usize = 10;
+    let num_bits = G::ScalarField::MODULUS_BIT_SIZE as usize;
+    let small_scalars = v
+        .iter()
+        .map(|s| {
+            let mut bits = s.into_bigint().to_bits_le();
+            // take up to MAX_BITS from bits, and pad with zeros up to num_bits
+            bits.truncate(MAX_BITS);
+            bits.resize(num_bits, false);
+            <G::ScalarField as PrimeField>::BigInt::from_bits_le(&bits)
+        })
+        .collect::<Vec<_>>();
+
+    let v = small_scalars
+        .iter()
+        .map(|s| G::ScalarField::from_bigint(*s).unwrap())
+        .collect::<Vec<_>>();
+
+    let g = (0..SAMPLES).map(|_| G::rand(&mut rng)).collect::<Vec<_>>();
+    let g = G::batch_convert_to_mul_base(&g);
+
+    let naive = naive_var_base_msm::<G>(g.as_slice(), v.as_slice());
+    let fast = G::msm_bigint(g.as_slice(), &small_scalars);
 
     assert_eq!(naive, fast);
 }
