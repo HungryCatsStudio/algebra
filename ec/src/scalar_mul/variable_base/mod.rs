@@ -301,3 +301,18 @@ fn make_digits(a: &impl BigInteger, w: usize, num_bits: usize) -> impl Iterator<
         digit
     })
 }
+
+// Isolated from Lasso: https://github.com/a16z/Lasso/blob/9b6202d2c967cc0f3953d404d94304a12a02ea3f/src/msm/mod.rs
+#[allow(dead_code)]
+fn find_max_num_bits<V: VariableBaseMSM>(
+    scalars: &[<V::ScalarField as PrimeField>::BigInt],
+) -> usize {
+    let mut max_num_bits = 0;
+    for scalar in scalars {
+        let num_bits = scalar.num_bits() as usize;
+        if num_bits > max_num_bits {
+            max_num_bits = num_bits;
+        }
+    }
+    max_num_bits
+}
