@@ -90,6 +90,18 @@ fn msm_bigint_wnaf<V: VariableBaseMSM>(
     bases: &[V::MulBase],
     bigints: &[<V::ScalarField as PrimeField>::BigInt],
 ) -> V {
+    let mut max_num_bits = 1usize;
+    for bigint in bigints {
+        if bigint.num_bits() as usize > max_num_bits {
+            max_num_bits = bigint.num_bits() as usize;
+        }
+
+        // Hack for early exit
+        if max_num_bits > 60 {
+            max_num_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
+            break;
+        }
+    }
     let size = ark_std::cmp::min(bases.len(), bigints.len());
     let scalars = &bigints[..size];
     let bases = &bases[..size];
@@ -100,7 +112,7 @@ fn msm_bigint_wnaf<V: VariableBaseMSM>(
         super::ln_without_floats(size) + 2
     };
 
-    let num_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
+    let num_bits = max_num_bits;
     let digits_count = (num_bits + c - 1) / c;
     let scalar_digits = scalars
         .iter()
@@ -164,7 +176,20 @@ fn msm_bigint<V: VariableBaseMSM>(
         super::ln_without_floats(size) + 2
     };
 
-    let num_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
+    let mut max_num_bits = 1usize;
+    for bigint in bigints {
+        if bigint.num_bits() as usize > max_num_bits {
+            max_num_bits = bigint.num_bits() as usize;
+        }
+
+        // Hack
+        if max_num_bits > 60 {
+            max_num_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
+            break;
+        }
+    }
+
+    let num_bits = max_num_bits;
     let one = V::ScalarField::one().into_bigint();
 
     let zero = V::zero();
