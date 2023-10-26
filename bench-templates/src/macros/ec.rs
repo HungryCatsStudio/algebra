@@ -23,7 +23,6 @@ macro_rules! ec_bench {
                     use ark_std::UniformRand;
                     let name = format!("{}::{}", $curve_name, stringify!($Group));
 
-                    type Scalar = <$Group as PrimeGroup>::ScalarField;
                     const SAMPLES: usize = 1000;
                     let mut rng = ark_std::test_rng();
                     let mut arithmetic =
@@ -209,6 +208,7 @@ macro_rules! ec_bench {
                     use ark_ff::PrimeField;
                     use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
                     use ark_std::UniformRand;
+                    use ark_ff::BigInteger;
 
                     const SAMPLES: usize = 131072;
 
@@ -222,9 +222,30 @@ macro_rules! ec_bench {
                     let scalars: Vec<_> = (0..SAMPLES)
                         .map(|_| Scalar::rand(&mut rng).into_bigint())
                         .collect();
+
                     c.bench_function(&format!("MSM for {name}"), |b| {
                         b.iter(|| {
-                            let result: $Group = VariableBaseMSM::msm_bigint(&v, &scalars);
+                            let result: $Group = VariableBaseMSM::<{u16::MAX as usize}>::msm_bigint(&v, &scalars);
+                            result
+                        })
+                    });
+
+                    // sample scalars from a smaller range, of up to 30 bits, by using `from_bits_le`
+                    const MAX_BITS: usize = 30;
+                    let num_bits = <Scalar as PrimeField>::MODULUS_BIT_SIZE as usize;
+                    let small_scalars = scalars
+                        .iter()
+                        .map(|s| {
+                            let mut bits = s.to_bits_le();
+                            bits.truncate(MAX_BITS);
+                            bits.resize(num_bits, false);
+                            <Scalar as PrimeField>::BigInt::from_bits_le(&bits)
+                        })
+                        .collect::<Vec<_>>();
+
+                    c.bench_function(&format!("MSM small for {name}"), |b| {
+                        b.iter(|| {
+                            let result: $Group = VariableBaseMSM::<MAX_BITS>::msm_bigint(&v, &small_scalars);
                             result
                         })
                     });

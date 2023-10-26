@@ -643,7 +643,7 @@ impl<P: SWCurveConfig> ScalarMul for Projective<P> {
     }
 }
 
-impl<P: SWCurveConfig> VariableBaseMSM for Projective<P> {
+impl<P: SWCurveConfig, const MAX_BITS: usize> VariableBaseMSM<MAX_BITS> for Projective<P> {
     fn msm(bases: &[Self::MulBase], bigints: &[Self::ScalarField]) -> Result<Self, usize> {
         P::msm(bases, bigints)
     }

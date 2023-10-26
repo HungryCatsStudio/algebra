@@ -4,7 +4,10 @@ use ark_serialize::{
 };
 use ark_std::io::{Read, Write};
 
-use crate::{scalar_mul::variable_base::VariableBaseMSM, AffineRepr};
+use crate::{
+    scalar_mul::variable_base::{VariableBaseMSM, FULL},
+    AffineRepr,
+};
 use num_traits::Zero;
 
 use ark_ff::{fields::Field, AdditiveGroup};
@@ -91,7 +94,7 @@ pub trait TECurveConfig: super::CurveConfig {
         scalars: &[Self::ScalarField],
     ) -> Result<Projective<Self>, usize> {
         (bases.len() == scalars.len())
-            .then(|| VariableBaseMSM::msm_unchecked(bases, scalars))
+            .then(|| VariableBaseMSM::<FULL>::msm_unchecked(bases, scalars))
             .ok_or(bases.len().min(scalars.len()))
     }
 

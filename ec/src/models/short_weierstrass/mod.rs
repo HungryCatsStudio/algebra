@@ -8,7 +8,8 @@ use ark_ff::{fields::Field, AdditiveGroup};
 
 use crate::{
     scalar_mul::{
-        sw_double_and_add_affine, sw_double_and_add_projective, variable_base::VariableBaseMSM,
+        sw_double_and_add_affine, sw_double_and_add_projective,
+        variable_base::{VariableBaseMSM, FULL},
     },
     AffineRepr,
 };
@@ -99,7 +100,7 @@ pub trait SWCurveConfig: super::CurveConfig {
         scalars: &[Self::ScalarField],
     ) -> Result<Projective<Self>, usize> {
         (bases.len() == scalars.len())
-            .then(|| VariableBaseMSM::msm_unchecked(bases, scalars))
+            .then(|| VariableBaseMSM::<FULL>::msm_unchecked(bases, scalars))
             .ok_or(bases.len().min(scalars.len()))
     }
 
