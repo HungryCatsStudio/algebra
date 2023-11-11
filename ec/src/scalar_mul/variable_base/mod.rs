@@ -9,6 +9,8 @@ pub use stream_pippenger::*;
 
 use super::ScalarMul;
 
+const MAX_BITS: usize = 60;
+
 pub trait VariableBaseMSM: ScalarMul {
     /// Computes an inner product between the [`PrimeField`] elements in `scalars`
     /// and the corresponding group elements in `bases`.
@@ -90,7 +92,7 @@ fn msm_bigint_wnaf<V: VariableBaseMSM>(
     bases: &[V::MulBase],
     bigints: &[<V::ScalarField as PrimeField>::BigInt],
 ) -> V {
-    let max_num_bits = 60usize;
+    let max_num_bits = MAX_BITS;
     let size = ark_std::cmp::min(bases.len(), bigints.len());
     let scalars = &bigints[..size];
     let bases = &bases[..size];
@@ -165,8 +167,7 @@ fn msm_bigint<V: VariableBaseMSM>(
         super::ln_without_floats(size) + 2
     };
 
-    let max_num_bits = 60usize;
-    let num_bits = max_num_bits;
+    let num_bits = MAX_BITS;
     let one = V::ScalarField::one().into_bigint();
 
     let zero = V::zero();
