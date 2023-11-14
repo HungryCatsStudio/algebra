@@ -9,6 +9,8 @@ pub use stream_pippenger::*;
 
 use super::ScalarMul;
 
+const SMALLNESS: usize = 60;
+
 pub trait VariableBaseMSM: ScalarMul {
     /// Computes an inner product between the [`PrimeField`] elements in `scalars`
     /// and the corresponding group elements in `bases`.
@@ -100,7 +102,7 @@ fn msm_bigint_wnaf<V: VariableBaseMSM>(
         super::ln_without_floats(size) + 2
     };
 
-    let num_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
+    let num_bits = SMALLNESS;
     let digits_count = (num_bits + c - 1) / c;
     let scalar_digits = scalars
         .iter()
@@ -164,7 +166,7 @@ fn msm_bigint<V: VariableBaseMSM>(
         super::ln_without_floats(size) + 2
     };
 
-    let num_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
+    let num_bits = SMALLNESS;
     let one = V::ScalarField::one().into_bigint();
 
     let zero = V::zero();
