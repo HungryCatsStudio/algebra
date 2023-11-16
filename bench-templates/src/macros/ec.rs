@@ -205,7 +205,7 @@ macro_rules! ec_bench {
 
                 fn msm_131072(c: &mut $crate::criterion::Criterion) {
                     use ark_ec::{scalar_mul::variable_base::VariableBaseMSM, CurveGroup};
-                    use ark_ff::PrimeField;
+                    use ark_ff::{PrimeField, BigInteger};
                     use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
                     use ark_std::UniformRand;
 
@@ -219,9 +219,30 @@ macro_rules! ec_bench {
                     let scalars: Vec<_> = (0..SAMPLES)
                         .map(|_| Scalar::rand(&mut rng).into_bigint())
                         .collect();
+
                     c.bench_function(&format!("MSM for {name}"), |b| {
                         b.iter(|| {
                             let result: $Group = VariableBaseMSM::msm_bigint(&v, &scalars);
+                            result
+                        })
+                    });
+
+                    // sample scalars from a smaller range, of up to 30 bits, by using `from_bits_le`
+                    const MAX_BITS: usize = 20;
+                    let num_bits = <Scalar as PrimeField>::MODULUS_BIT_SIZE as usize;
+                    let small_scalars = scalars
+                        .iter()
+                        .map(|s| {
+                            let mut bits = s.to_bits_le();
+                            bits.truncate(MAX_BITS);
+                            bits.resize(num_bits, false);
+                            <Scalar as PrimeField>::BigInt::from_bits_le(&bits)
+                        })
+                        .collect::<Vec<_>>();
+
+                    c.bench_function(&format!("MSM small for {name}"), |b| {
+                        b.iter(|| {
+                            let result: $Group = VariableBaseMSM::msm_bigint(&v, &small_scalars);
                             result
                         })
                     });
