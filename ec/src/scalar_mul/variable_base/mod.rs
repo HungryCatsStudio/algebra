@@ -9,7 +9,7 @@ pub use stream_pippenger::*;
 
 use super::ScalarMul;
 
-pub const SMALLNESS: usize = 30;
+pub const SMALLNESS: usize = 40;
 
 pub trait VariableBaseMSM: ScalarMul {
     /// Computes an inner product between the [`PrimeField`] elements in `scalars`
