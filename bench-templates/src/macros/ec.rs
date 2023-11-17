@@ -1,4 +1,3 @@
-
 #[macro_export]
 macro_rules! ec_bench {
     ($curve_name:expr, $Group:ident) => {
@@ -216,16 +215,16 @@ macro_rules! ec_bench {
                     let n_points = 1 << 17;
                     let size_middle = 60;
                     let size_small = 20;
-                    
+
                     fn small_scalar<F: PrimeField>(rng: &mut impl Rng, bit_size: usize) -> F::BigInt {
                         let s = F::rand(rng).into_bigint();
                         let mut bits = s.to_bits_le();
-                    
+
                         bits.truncate(bit_size);
                         bits.resize(F::MODULUS_BIT_SIZE as usize, false);
-                        
+
                         F::BigInt::from_bits_le(&bits)
-                    }                    
+                    }
 
                     let name = format!("{}::{}", $curve_name, stringify!($Group));
                     let mut rng = &mut ark_std::test_rng();
@@ -245,21 +244,21 @@ macro_rules! ec_bench {
                     let scalars_small: Vec<_> = (0..n_points)
                         .map(|_| small_scalar::<Scalar>(rng, size_small)).collect();
 
-                    c.bench_function(&format!("MSM for {name} (scalar size: full, n. points: {n_points}"), |b| {
+                    c.bench_function(&format!("MSM for {name} (scalar size: full, n. points: {n_points})"), |b| {
                         b.iter(|| {
                             let result: $Group = VariableBaseMSM::msm_bigint(&points, &scalars_full);
                             result
                         })
                     });
 
-                    c.bench_function(&format!("MSM for {name} (scalar size: {size_middle}, n. points: {n_points}"), |b| {
+                    c.bench_function(&format!("MSM for {name} (scalar size: {size_middle}, n. points: {n_points})"), |b| {
                         b.iter(|| {
                             let result: $Group = VariableBaseMSM::msm_bigint(&points, &scalars_middle);
                             result
                         })
                     });
 
-                    c.bench_function(&format!("MSM for {name} (scalar size: {size_small}, n. points: {n_points}"), |b| {
+                    c.bench_function(&format!("MSM for {name} (scalar size: {size_small}, n. points: {n_points})"), |b| {
                         b.iter(|| {
                             let result: $Group = VariableBaseMSM::msm_bigint(&points, &scalars_small);
                             result
