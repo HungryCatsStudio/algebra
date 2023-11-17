@@ -214,18 +214,12 @@ macro_rules! ec_bench {
                     let name = format!("{}::{}", $curve_name, stringify!($Group));
                     let mut rng = ark_std::test_rng();
 
-                    let g = <$Group>::rand(&mut rng).into_affine();
-                    let v: Vec<_> = (0..SAMPLES).map(|_| g).collect();
                     let scalars: Vec<_> = (0..SAMPLES)
                         .map(|_| Scalar::rand(&mut rng).into_bigint())
                         .collect();
 
-                    c.bench_function(&format!("MSM for {name}"), |b| {
-                        b.iter(|| {
-                            let result: $Group = VariableBaseMSM::msm_bigint(&v, &scalars);
-                            result
-                        })
-                    });
+                    // generating different points
+                    let v: Vec<_> = (0..SAMPLES).map(|_| <$Group>::rand(&mut rng).into_affine()).collect();
 
                     use ark_ec::scalar_mul::variable_base::SMALLNESS;
                     // sample scalars from a smaller range, of up to 30 bits, by using `from_bits_le`
