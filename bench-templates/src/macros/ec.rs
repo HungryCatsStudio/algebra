@@ -227,8 +227,9 @@ macro_rules! ec_bench {
                         })
                     });
 
+                    use ark_ec::scalar_mul::variable_base::SMALLNESS;
                     // sample scalars from a smaller range, of up to 30 bits, by using `from_bits_le`
-                    const MAX_BITS: usize = 20;
+                    const MAX_BITS: usize = SMALLNESS;
                     let num_bits = <Scalar as PrimeField>::MODULUS_BIT_SIZE as usize;
                     let small_scalars = scalars
                         .iter()
