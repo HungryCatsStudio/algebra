@@ -100,7 +100,11 @@ fn msm_bigint_wnaf<V: VariableBaseMSM>(
         super::ln_without_floats(size) + 2
     };
 
+    // comment out the following lines to "force" smallness.
+    // this is basically the optimization in Lasso: https://github.com/a16z/Lasso/blob/823da601422d17f7c150631947b33a9db1ad5b98/src/msm/mod.rs#L98
+    // but further avoiding the loop if we know the scalars are small.
     let num_bits = V::ScalarField::MODULUS_BIT_SIZE as usize;
+    // let num_bits = 20;
     let digits_count = (num_bits + c - 1) / c;
     let scalar_digits = scalars
         .iter()
