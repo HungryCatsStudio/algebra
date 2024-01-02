@@ -9,7 +9,7 @@ pub use stream_pippenger::*;
 
 use super::ScalarMul;
 
-const MAX_BITS: usize = 60;
+const MAX_BITS: usize = 32;
 
 pub trait VariableBaseMSM: ScalarMul {
     /// Computes an inner product between the [`PrimeField`] elements in `scalars`
